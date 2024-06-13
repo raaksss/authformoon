@@ -7,8 +7,7 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
     const { username, password } = req.body;
 
-    // Here you should validate the user credentials using your logic.
-    // This example uses hardcoded values.
+
     if (username === 'qwerty' && password === 'qwerty') {
       const token = jwt.sign({ username }, SECRET_KEY, { expiresIn: '1h' });
       res.status(200).json({ token });
