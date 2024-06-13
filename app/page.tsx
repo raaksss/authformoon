@@ -1,9 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { setToken } from '@/redux/auth/auth.slice';
+import axios from 'axios';
+import { setToken, setUser } from '@/redux/auth/auth.slice';
 import useAuthSession from '../hooks/useAuthSession';
 import { useAppDispatch } from '@/redux/store';
+import axiosInstance from '../lib/axiosInstance';
 
 const HomePage = () => {
   const [username, setUsername] = useState('');
@@ -12,8 +14,20 @@ const HomePage = () => {
   const user = useAuthSession();
 
   const handleLogin = async () => {
-    // Implement the logic to authenticate the user
+    try {
+      const response = await axiosInstance.post('/login', { username, password });
+      const { token } = response.data;
+      localStorage.setItem('token', token); 
+      axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      dispatch(setToken(token))
+
+      const userInfoResponse = await axiosInstance.get('/check-session');
+      dispatch(setUser(userInfoResponse.data.user));
+    } catch (error) {
+      console.error('Login failed:', error);
+    }
   };
+
 
   return (
     <div className="flex items-center justify-center h-screen bg-gray-100">
@@ -24,20 +38,20 @@ const HomePage = () => {
           </div>
         ) : (
           <div>
-            <h2 className="text-2xl font-bold text-center">Login</h2>
+            <h2 className="text-2xl font-bold text-black text-center">Login</h2>
             <input
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               placeholder="Username"
-              className="w-full px-4 py-2 mt-4 border rounded-md"
+              className="w-full px-4 py-2 mt-4 text-black border rounded-md"
             />
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full px-4 py-2 mt-4 border rounded-md"
+              className="w-full px-4 py-2 mt-4 border text-black rounded-md"
             />
             <button
               onClick={handleLogin}
